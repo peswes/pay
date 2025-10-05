@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/*.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/pay",
+      "destination": "/api/pay.js"
+    },
+    {
+      "source": "/api/webhook",
+      "destination": "/api/webhook.js"
+    }
+  ]
+}

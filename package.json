@@ -1,0 +1,14 @@
+{
+  "name": "chez-nous-chez-vous-backend",
+  "version": "1.0.0",
+  "description": "Serverless backend for Chez Nous Chez Vous Apartments Paystack integration",
+  "main": "api/pay.js",
+  "type": "module",
+  "scripts": {
+    "start": "node api/pay.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "nodemailer": "^6.9.8"
+  }
+}

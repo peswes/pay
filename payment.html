@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chez Nous Chez Vous Apartments — Booking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #ff7b00;
+      --light: #fff;
+      --text-dark: #333;
+      --shadow: rgba(0,0,0,0.1);
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background: var(--light);
+      color: var(--text-dark);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      background: var(--light);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px var(--shadow);
+      max-width: 450px;
+      width: 100%;
+      padding: 30px 25px;
+      text-align: center;
+    }
+    h1 {
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #666;
+      margin-bottom: 25px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+    }
+    label {
+      text-align: left;
+      font-weight: 500;
+      color: #555;
+    }
+    input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    .price-display {
+      background: #fff7f0;
+      border: 1px solid #ffe0c2;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 500;
+      color: var(--primary);
+    }
+    button {
+      background: var(--primary);
+      color: var(--light);
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s, transform 0.2s;
+    }
+    button:hover {
+      background: #e86e00;
+      transform: translateY(-2px);
+    }
+    footer {
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: #999;
+    }
+    @media (max-width: 480px) {
+      .container {
+        padding: 25px 15px;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Chez Nous Chez Vous Apartments</h1>
+    <p>Book your stay in comfort and style: Payment Page</p>
+
+    <form id="bookingForm">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" required placeholder="Enter your full name">
+
+      <label for="email">Email Address</label>
+      <input type="email" id="email" required placeholder="Enter your email">
+
+      <label for="checkIn">Check-in Date</label>
+      <input type="date" id="checkIn" required>
+
+      <label for="checkOut">Check-out Date</label>
+      <input type="date" id="checkOut" required>
+
+      <div class="price-display" id="priceDisplay">Total: ₦0 (0 nights)</div>
+
+      <button type="submit">Proceed to Payment</button>
+    </form>
+
+    <footer>© 2025 Chez Nous Chez Vous Apartments</footer>
+  </div>
+
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script>
+    const form = document.getElementById('bookingForm');
+    const priceDisplay = document.getElementById('priceDisplay');
+    const ratePerNight = 50000; // This can be edited from backend later
+
+    function calculateNights() {
+      const checkIn = new Date(document.getElementById('checkIn').value);
+      const checkOut = new Date(document.getElementById('checkOut').value);
+      const diff = checkOut - checkIn;
+      if (diff <= 0) return { nights: 0, total: 0 };
+      const nights = diff / (1000 * 60 * 60 * 24);
+      return { nights, total: nights * ratePerNight };
+    }
+
+    document.getElementById('checkIn').addEventListener('change', updatePrice);
+    document.getElementById('checkOut').addEventListener('change', updatePrice);
+
+    function updatePrice() {
+      const { nights, total } = calculateNights();
+      priceDisplay.textContent = `Total: ₦${total.toLocaleString()} (${nights} night${nights > 1 ? 's' : ''})`;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { nights, total } = calculateNights();
+      if (nights <= 0) {
+        alert("Please select valid check-in and check-out dates.");
+        return;
+      }
+
+      const data = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        checkIn: document.getElementById('checkIn').value,
+        checkOut: document.getElementById('checkOut').value,
+        amount: total
+      };
+
+      const response = await fetch('https://your-vercel-app.vercel.app/api/pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+      if (result.status === 'success') {
+        let handler = PaystackPop.setup({
+          key: result.publicKey,
+          email: data.email,
+          amount: total * 100,
+          currency: 'NGN',
+          callback: function (response) {
+            alert('Payment successful!');
+          },
+          onClose: function () {
+            alert('Transaction cancelled.');
+          }
+        });
+        handler.openIframe();
+      } else {
+        alert('Payment initialization failed.');
+      }
+    });
+  </script>
+
+</body>
+</html>
