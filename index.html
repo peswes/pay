@@ -76,7 +76,7 @@
 <script>
 const form = document.getElementById('bookingForm');
 const priceDisplay = document.getElementById('priceDisplay');
-const ratePerNight = 50000;
+const ratePerNight = 100;
 
 function calculateNights() {
   const checkIn = new Date(document.getElementById('checkIn').value);
@@ -123,10 +123,10 @@ form.addEventListener('submit', async (e) => {
         amount: total * 100,
         currency: 'NGN',
         callback: function(response) {
-          // ✅ Redirect to success page after payment
-       window.location.href = `success.html?reference=${response.reference}`;
+    // Redirect to live success page with reference
+    window.location.href = `https://peswes.github.io/pay/success.html?reference=${response.reference}`;
+},
 
-        },
         onClose: function() {
           alert('Transaction cancelled.');
         }
